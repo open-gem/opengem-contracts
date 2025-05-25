@@ -1,4 +1,5 @@
-import "./JettonWallet.tact";
+import "./JettonWallet";
+
 message JettonMint {
     origin: Address;
     receiver: Address;
@@ -49,48 +50,44 @@ trait JettonMaster {
         let initCode: StateInit = self.calculate_jetton_wallet_init(msg.receiver);
         self.total_supply = (self.total_supply + msg.amount);
         send(SendParameters{
-                to: contractAddress(initCode),
-                value: 0,
-                bounce: true,
-                mode: SendRemainingValue,
-                body: JettonInternalTransfer{
-                    query_id: 0,
-                    amount: msg.amount,
-                    response_address: msg.origin,
-                    from: myAddress(),
-                    forward_ton_amount: msg.forward_ton_amount,
-                    forward_payload: msg.forward_payload
-                }.toCell(),
-                code: initCode.code,
-                data: initCode.data
-            }
-        );
+            mode: SendRemainingValue,
+            body: JettonInternalTransfer{
+                query_id: 0,
+                amount: msg.amount,
+                response_address: msg.origin,
+                from: myAddress(),
+                forward_ton_amount: msg.forward_ton_amount,
+                forward_payload: msg.forward_payload
+            }.toCell(),
+            code: initCode.code,
+            data: initCode.data
+            value: 0,
+            to: contractAddress(initCode)
+        });
     }
 
     inline fun _burn_notification(ctx: Context, msg: JettonBurnNotification) {
         self.total_supply = (self.total_supply - msg.amount);
         if (msg.response_destination.toString() != "") {
-            send(SendParameters{
-                    to: msg.response_destination,
-                    value: 0,
-                    bounce: false,
-                    mode: (SendRemainingValue + SendIgnoreErrors)
-                }
-            );
+            message(MessageParameters{
+                mode: (SendRemainingValue | SendIgnoreErrors)
+                value: 0,
+                to: msg.response_destination,
+                bounce: false,
+            });
         }
     }
 
-    // ====== Get Methods ====== //
+// ====== Get Methods ====== //
 
     get fun get_jetton_data(): JettonData {
-        return
-            JettonData{
-                total_supply: self.total_supply,
-                mintable: self.mintable,
-                admin_address: self.owner,
-                jetton_content: self.jetton_content,
-                jetton_wallet_code: self.calculate_jetton_wallet_init(myAddress()).code
-            };
+        return JettonData{
+            total_supply: self.total_supply,
+            mintable: self.mintable,
+            admin_address: self.owner,
+            jetton_content: self.jetton_content,
+            jetton_wallet_code: self.calculate_jetton_wallet_init(myAddress()).code
+        };
     }
 
     get fun get_wallet_address(owner_address: Address): Address {
