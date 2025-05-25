@@ -103,7 +103,7 @@ trait JettonWallet {
             fwd_count = 2;
         }
         require(ctx.value > ((fwd_count * ctx.readForwardFee() + 2 * self.gasConsumption) + self.minTonsForStorage),
-            "Not enough funds to transfer"
+        "Not enough funds to transfer"
         );
     }
 
@@ -111,45 +111,41 @@ trait JettonWallet {
         let init: StateInit = self.calculate_jetton_wallet_init(msg.destination);
         let receiver: Address = contractAddress(init);
         send(SendParameters{
-                to: receiver,
-                value: 0,
-                bounce: true,
-                mode: SendRemainingValue,
-                body: JettonInternalTransfer{
-                    query_id: msg.query_id,
-                    amount: msg.amount,
-                    response_address: msg.response_destination,
-                    from: self.owner,
-                    forward_ton_amount: msg.forward_ton_amount,
-                    forward_payload: msg.forward_payload
-                }.toCell(),
-                code: init.code,
-                data: init.data
-            }
-        );
+            mode: SendRemainingValue,
+            body: JettonInternalTransfer{
+                query_id: msg.query_id,
+                amount: msg.amount,
+                response_address: msg.response_destination,
+                from: self.owner,
+                forward_ton_amount: msg.forward_ton_amount,
+                forward_payload: msg.forward_payload
+            }.toCell(),
+            code: init.code,
+            data: init.data,
+            value: 0,
+            to: receiver
+        });
     }
 
     virtual inline fun _burn_tokens(ctx: Context, msg: JettonBurn) {
-        send(SendParameters{
-                to: self.jetton_master,
-                value: 0,
-                mode: SendRemainingValue,
-                bounce: true,
-                body: JettonBurnNotification{
-                    query_id: msg.query_id,
-                    amount: msg.amount,
-                    sender: self.owner,
-                    response_destination: msg.response_destination
-                }.toCell()
-            }
-        );
+        message(MessageParameters{
+            mode: SendRemainingValue,
+            body: JettonBurnNotification{
+                query_id: msg.query_id,
+                amount: msg.amount,
+                sender: self.owner,
+                response_destination: msg.response_destination
+            }.toCell(),
+            value: 0,
+            to: self.jetton_master
+        });
     }
 
     virtual inline fun _internal_transfer_validate(ctx: Context, msg: JettonInternalTransfer) {
         if (ctx.sender != self.jetton_master) {
             let init: StateInit = self.calculate_jetton_wallet_init(msg.from);
             require(ctx.sender == contractAddress(init),
-                "JettonWallet: Only Jetton master or Jetton wallet can call this function"
+            "JettonWallet: Only Jetton master or Jetton wallet can call this function"
             );
         }
     }
@@ -166,42 +162,39 @@ trait JettonWallet {
 
     virtual inline fun _internal_transfer_notification(ctx: Context, msg: JettonInternalTransfer) {
         if (msg.forward_ton_amount > 0) {
-            send(SendParameters{
-                    to: self.owner,
-                    value: msg.forward_ton_amount,
-                    mode: SendPayGasSeparately,
-                    bounce: false,
-                    body: JettonTransferNotification{
-                        query_id: msg.query_id,
-                        amount: msg.amount,
-                        sender: msg.from,
-                        forward_payload: msg.forward_payload
-                    }.toCell()
-                }
-            );
+            message(MessageParameters{
+                mode: SendPayGasSeparately,
+                body: JettonTransferNotification{
+                    query_id: msg.query_id,
+                    amount: msg.amount,
+                    sender: msg.from,
+                    forward_payload: msg.forward_payload
+                }.toCell(),
+                value: msg.forward_ton_amount,
+                to: self.owner,
+                bounce: false
+            });
         }
     }
 
     virtual inline fun _internal_transfer_excesses(ctx: Context, msg: JettonInternalTransfer, remain: Int) {
         if (msg.response_address != null && remain > 0) {
-            send(SendParameters{
-                    to: msg.response_address!!,
-                    value: remain,
-                    bounce: false,
-                    mode: SendIgnoreErrors,
-                    body: JettonExcesses{query_id: msg.query_id}.toCell()
-                }
-            );
+            message(MessageParameters{
+                mode: SendIgnoreErrors,
+                body: JettonExcesses{query_id: msg.query_id}.toCell(),
+                value: remain,
+                to: msg.response_address!!,
+                bounce: false
+            });
         }
     }
 
     get fun get_wallet_data(): WalletData {
-        return
-            WalletData{
-                balance: self.balance,
-                owner: self.owner,
-                jetton: self.jetton_master,
-                jetton_wallet_code: self.calculate_jetton_wallet_init(self.owner).code
-            };
+        return WalletData{
+            balance: self.balance,
+            owner: self.owner,
+            jetton: self.jetton_master,
+            jetton_wallet_code: self.calculate_jetton_wallet_init(self.owner).code
+        };
     }
 }
