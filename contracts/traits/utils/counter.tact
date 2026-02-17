@@ -10,17 +10,17 @@ trait Counter {
      * This variable should never be directly accessed by users of the library: interactions must be restricted to
      * the library's function.
      */
-    Counter: Int; // default: 0
+    counter: Int; // default: 0
 
     get fun current(): Int {
-        return self.Counter;
+        return self.counter;
     }
 
     fun increment() {
-        self.Counter += 1;
+        self.counter += 1;
     }
 
     fun decrement() {
-        self.Counter -= 1;
+        self.counter -= 1;
     }
 }

@@ -3,3 +3,4 @@ temp
 build
 dist
 .DS_Store
+.idea

@@ -1,6 +1,6 @@
 import "@stdlib/deploy";
-import "../../../traits/tokens/jetton/JettonMaster.tact";
-import "../../../traits/tokens/jetton/JettonWallet.tact";
+import "../../../traits/tokens/jetton/jetton_master.tact";
+import "../../../traits/tokens/jetton/jetton_wallet.tact";
 
 contract JettonMasterImp with JettonMaster, Deployable {
     total_supply: Int as coins;

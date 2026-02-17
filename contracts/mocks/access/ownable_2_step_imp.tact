@@ -1,8 +1,8 @@
-import "../../traits/access/OwnableTransferable2Step.tact";
+import "../../traits/access/ownable_transferable_2_step.tact";
 
 contract OwnableTransferable2StepImp with OwnableTransferable2Step {
     owner:Address;
-    _pendingOwner: Address?;
+    pendingOwner: Address?;
 
     init(){
         self.owner = sender();

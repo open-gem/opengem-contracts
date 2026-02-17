@@ -1,9 +1,9 @@
-import "../../traits/utils/Counter.tact";
+import "../../traits/utils/counter.tact";
 
 contract CounterImp with Counter {
-    Counter: Int;
+    counter: Int;
     init(){
-        self.Counter = 0;
+        self.counter = 0;
     }
 
     receive("increment"){

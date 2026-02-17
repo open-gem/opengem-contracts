@@ -18,8 +18,8 @@ Import the required contracts and traits in your Tact code.
 
 ```ts
 import "@stdlib/deploy";
-import "../imports/tonion/JettonMaster.tact";
-import "../imports/tonion/JettonWallet.tact";
+import "../imports/tonion/jetton_master.tact";
+import "../imports/tonion/jetton_wallet.tact";
 
 contract MyJetton with JettonMaster, Deployable {
     total_supply: Int as coins;
@@ -44,8 +44,8 @@ contract MyJetton with JettonMaster, Deployable {
 #### Sample Jetton Wallet:
 ```ts
 import "@stdlib/deploy";
-import "../imports/tonion/JettonMaster.tact";
-import "../imports/tonion/JettonWallet.tact";
+import "../imports/tonion/jetton_master.tact";
+import "../imports/tonion/jetton_wallet.tact";
 
 contract MyJettonWallet with JettonWallet, Deployable {
     balance: Int as coins = 0;
